@@ -1,0 +1,82 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Parameters:
+  VPC:
+    Type: String
+  PrivateSubnet1:
+    Type: String
+  PrivateSubnet2:
+    Type: String
+  PrivateSubnet3:
+    Type: String
+  DatabaseName:
+    Type: String
+  ParentStackName:
+    Type: String
+  DbSecretName:
+    Type: String
+
+Resources:
+  DBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName:  !Join [ "-", ["db-sg",!Ref ParentStackName] ]
+      GroupDescription: "Security group with db"
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 3306
+        ToPort: 3306
+        CidrIp: 10.5.0.0/16
+
+      SecurityGroupEgress:
+      - IpProtocol: tcp
+        FromPort: 3306
+        ToPort: 3306
+        CidrIp: 10.5.0.0/16
+
+  DBSubnetGroup:
+     Type: AWS::RDS::DBSubnetGroup
+     Properties:
+       DBSubnetGroupDescription: "RDS Subnet Group"
+       SubnetIds:
+         - Ref: PrivateSubnet1
+         - Ref: PrivateSubnet2
+         - Ref: PrivateSubnet3
+
+  DbSecret:
+    Type: 'AWS::SecretsManager::Secret'
+    Properties:
+      Name: !Ref DbSecretName
+      Description: "This secret has a dynamically generated secret password."
+      GenerateSecretString:
+        SecretStringTemplate: '{"username":"rds_admin"}'
+        GenerateStringKey: "password"
+        PasswordLength: 16
+        ExcludeCharacters: '"@/\'
+  
+  RDS:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBName: !Ref DatabaseName
+      DBInstanceIdentifier: !Join [ "-", [ "rds-db",!Ref ParentStackName ] ]
+      AllocatedStorage: 30
+      DBInstanceClass: "db.t4g.small"
+      Engine: "mysql"
+      EngineVersion: "8.0"
+      MasterUsername: !Join ['', ['{{resolve:secretsmanager:', !Ref DbSecret, ':SecretString:username}}' ]]
+      MasterUserPassword: !Join ['', ['{{resolve:secretsmanager:', !Ref DbSecret, ':SecretString:password}}' ]]
+      DBSubnetGroupName: !Ref DBSubnetGroup
+      VPCSecurityGroups: 
+      - !Ref DBSecurityGroup
+      DeletionProtection: true
+      BackupRetentionPeriod: 30
+      MultiAZ: false
+
+Outputs:
+  DbSecretManager:
+    Description: "The ARN of the SecretsManager secret"
+    Value: !Ref DbSecret
+  dbClusterURL:
+    Description: Database Cluster URL Endpoint.
+    Value: !GetAtt RDS.Endpoint.Address
