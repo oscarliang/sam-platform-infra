@@ -1,0 +1,32 @@
+---
+S3:
+  - bucket_name: bucket1-339713072437
+    type: "AWS::S3::Bucket"
+  - bucket_name: bucket2-339713072437
+    type: "AWS::S3::Bucket"
+VPC:
+  - vpc_name: "SAMNonprodVPC"
+  - vpc_cidr: "10.10.0.0/16"
+  - max_azs: 2
+  - nat_gateways: 1
+RDS:
+  db_instance_identifier: "rds-sam-nonprod"
+  db_name: "sam_app"
+  allocated_storage: 30
+  db_instance_class: "t4g.micro"
+  db_secret_name: "rds-sam-nonprod-cred"
+  master_username: "rds_admin"
+  db_subnet_group_name: "rds-sam-nonprod-db-subnet-group"
+  db_security_group_name: "rds-sam-nonprod-db-security-group"
+  deletion_protection: true
+  backup_retention_period: 30
+  multi_az: false
+EKS:
+  cluster:
+    name: 'EKS-sam-nonprod-cluster'
+  nodeGroup:
+    name: 'EKS-sam-nonprod-nodegroup'
+    desiredSize: 1
+    maxSize: 3
+    minSize: 1
+    diskSize: 50

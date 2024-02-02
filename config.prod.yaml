@@ -1,0 +1,12 @@
+---
+S3:
+  - bucket_name: bucket1-prod-339713072437
+    type: "AWS::S3::Bucket"
+  - bucket_name: bucket2-prod-339713072437
+    type: "AWS::S3::Bucket"
+VPC:
+  - vpc_name: "SAMprodVPC"
+  - vpc_cidr: "10.20.0.0/16"
+  - max_azs: 2
+  - nat_gateways: 1
+  
