@@ -1,31 +1,31 @@
 ---
 S3:
-  - bucket_name: bucket1-339713072437
+  - bucket_name: sam-dev-public-assets
     type: "AWS::S3::Bucket"
-  - bucket_name: bucket2-339713072437
+  - bucket_name: sam-dev-public-storage
     type: "AWS::S3::Bucket"
 VPC:
-  - vpc_name: "SAMNonprodVPC"
+  - vpc_name: "sam-app-dev"
   - vpc_cidr: "10.10.0.0/16"
   - max_azs: 2
   - nat_gateways: 1
 RDS:
-  db_instance_identifier: "rds-sam-nonprod"
-  db_name: "sam_app"
-  allocated_storage: 30
+  db_instance_identifier: "sam-app-dev-db"
+  db_name: "sam_app_dev"
+  allocated_storage: 20
   db_instance_class: "t4g.micro"
-  db_secret_name: "rds-sam-nonprod-cred"
+  db_secret_name: "sam-app-dev-vault"
   master_username: "rds_admin"
-  db_subnet_group_name: "rds-sam-nonprod-db-subnet-group"
-  db_security_group_name: "rds-sam-nonprod-db-security-group"
-  deletion_protection: true
+  db_subnet_group_name: "sam-app-dev-db-subnet-group"
+  db_security_group_name: "rds-sam-app-dev-db-security-group"
+  deletion_protection: false
   backup_retention_period: 30
   multi_az: false
 EKS:
   cluster:
-    name: 'EKS-sam-nonprod-cluster'
+    name: 'sam-app-dev-cluster'
   nodeGroup:
-    name: 'EKS-sam-nonprod-nodegroup'
+    name: 'sam-app-dev-nodegroup'
     desiredSize: 1
     maxSize: 3
     minSize: 1

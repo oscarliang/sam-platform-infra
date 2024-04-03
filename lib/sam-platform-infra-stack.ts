@@ -12,6 +12,7 @@ export class SamPlatformInfraStack extends cdk.Stack {
     super(scope, id, props);
 
     let config;
+
     try {
       const env = process.env.NODE_ENV || 'development';
       const configFile = env === 'production' ? './config.prod.yaml' : './config.dev.yaml';
@@ -19,7 +20,6 @@ export class SamPlatformInfraStack extends cdk.Stack {
       const fileContents = fs.readFileSync(configFile, 'utf8');
       config = yaml.load(fileContents);
 
-      console.log(config);
     } catch (e) {
       console.error(e);
     }
@@ -31,7 +31,6 @@ export class SamPlatformInfraStack extends cdk.Stack {
     // Create S3 buckets based on the provided names
     s3Configs.forEach((s3Config: { bucket_name: string; type: string }) => {
       // Create S3 buckets based on the configuration
-      console.log(s3Config.bucket_name);
       new s3.Bucket(this, s3Config.bucket_name, {
         bucketName: s3Config.bucket_name,
         versioned: true,
@@ -43,10 +42,6 @@ export class SamPlatformInfraStack extends cdk.Stack {
     // ********************** VPC *****************************
     // Create a VPC with specified CIDR block
     const vpcConfigs = config.VPC.reduce((acc: any, item: any) => ({ ...acc, ...item }), {});
-
-    console.log(vpcConfigs.vpc_cidr);
-    console.log(vpcConfigs.max_azs);
-    console.log(vpcConfigs.nat_gateways);
 
     const vpc = new ec2.Vpc(this, vpcConfigs.vpc_name, {
       cidr: vpcConfigs.vpc_cidr,
@@ -70,7 +65,6 @@ export class SamPlatformInfraStack extends cdk.Stack {
 
     // ********************** RDS *****************************
     const rdsConfig = config.RDS;
-    console.log(rdsConfig);
 
     const dbSubnetGroup = new rds.SubnetGroup(this, rdsConfig.db_subnet_group_name, {
       vpc,
@@ -93,7 +87,7 @@ export class SamPlatformInfraStack extends cdk.Stack {
       generateSecretString: {
         secretStringTemplate: JSON.stringify({ username: rdsConfig.master_username }),
         generateStringKey: 'password',
-        passwordLength: 16,
+        passwordLength: 12,
         excludeCharacters: '"@/\\',
       },
     });
@@ -116,7 +110,6 @@ export class SamPlatformInfraStack extends cdk.Stack {
 
     // ********************** EKS Cluster *****************************
     const eksConfig = config.EKS;
-    console.log(eksConfig);
 
     // EKS Cluster Role
     const eksClusterRole = new iam.Role(this, 'EKSClusterRole', {
