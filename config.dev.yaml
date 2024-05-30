@@ -26,7 +26,24 @@ EKS:
     name: 'sam-app-dev-cluster'
   nodeGroup:
     name: 'sam-app-dev-nodegroup'
-    desiredSize: 1
+    desiredSize: 2
     maxSize: 3
-    minSize: 1
+    minSize: 2
     diskSize: 50
+APIG:
+  name: sam
+  stageName: dev
+
+COGNITO:
+  domainPrefix: "sam-dev"
+  callbackUrl: "https://dev.symbuild.com.au/"
+  logoutUrl: "https://dev.symbuild.com.au/"
+
+ELASTICACHE:
+  REDIS:
+    security_group_name: 'redis-security-group'
+    subnet_group_name: 'redis-subnet-group'
+    cache_cluster_id: 'sam-redis-cluster'
+    node_type: 'cache.t3.micro'
+    num_cache_nodes: 1
+    engine_version: '7.1'
